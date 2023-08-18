@@ -1,114 +1,118 @@
-import io
+import os
 
 
-# Заполнение справочника телефонов
-def add_records(file):
-    contact = dict()
-    contact['surname'] = input('Введите фамилию: ')
-    contact['name'] = input('Введите имя: ')
-    contact['second_name'] = input('Введите отчество: ')
-    contact['organization'] = input('Введите название организации: ')
-    contact['job_phone'] = input('Введите рабочий телефон: ')
-    contact['mobile_phone'] = input('Введите сотовый телефон: ')
+# Функция добавления новой записи в телефонный справочник
+def add_entry():
+    last_name = input("Введите фамилию: ")
+    first_name = input("Введите имя: ")
+    second_name = input("Введите отчество: ")
+    org_name = input("Введите название организации: ")
+    work_phone = input("Введите телефон рабочий: ")
+    pers_phone = input("Введите телефон личный: ")
 
-    # содержание файла
-    data = '{surname},{name},{second_name},{organization},{job_phone},{mobile_phone}\n'
-
-    # запись в файл
-    with open(file, 'a') as f:
-        f.write(data.format(**contact))
+    # Запись данных в файл
+    data_file = open('PhoneBook.txt', 'a')
+    data_file.write('{};{};{};{};{};{};\n'.format(last_name, first_name, second_name, org_name, work_phone, pers_phone))
 
 
-# Функция поиска записей в справочнике
-def search_records(file):
-    data = list()  # список с информацией из файла
-    found = list()  # список с найдеными контактами
-    criteria = input('Введите имя или другую информацию о контакте в полном объёме: ')
-    # чтение содержимого файла
-    with io.open(file, 'r', encoding='utf-8-sig') as f:
-        lines = f.readlines()
-    # разбор строк и заполнение списка со значениями
-    for line in lines:
-        data.append(list(line.split(',')))
-    # поиск по критерию
-    for line in data:
-        for value in line:
-            if criteria in value:
-                found.append(line)
-                break
-    # вывод найденых контактов
-    for contact in found:
-        print('{0:<20}{1:<20}{2:<20}{3:<20}{4:<20}{5:<20}'.format(contact[0], contact[1], contact[2], contact[3],
-                                                                  contact[4], contact[5]))
+# Функция поиска записи в телефонном справочнике
+def search_entry():
+    search_key = input("Введите строку для поиска: ")
+    search_results = ""
 
-
-# Функция вывода постранично записей из справочника на экран
-def show_records(page, records, contact=None):
-    # вычисляем индексы начала и конца отображения текущей страницы
-    start_index = page * page_size
-    end_index = (page + 1) * page_size
-
-
-    # выводим информацию о записях
-    with open("PhoneBook.txt", "r") as file:
-        for i in range(start_index, min(end_index, len(records))):
-            date = records[i]
-            print(i + 1, date)
-           # print(file.read())
-
-
-
-
-# Функция редактирования записей в справочнике
-def edit_records(index, file):
-    # проверяем, что индекс находится в пределах допустимых значений
-    if index not in range(len(records_phonebook)):
-        print("Такой записи нет")
-        return
-
-    record = records_phonebook[index]
-    print("Редактируемая запись: {} {} {} {} {} {}".format(record[0], record[1], record[2],
-                                                     record[3], record[4], record[5]))
-
-    surname = input('Введите фамилию: ')
-    name = input("Введите имя контакта: ")
-    second_name = input('Введите отчество: ')
-    organization = input('Введите название организации: ')
-    job_phone = input('Введите рабочий телефон: ')
-    mobile_phone = input('Введите сотовый телефон: ')
-
-    record = (surname, name, second_name, organization, job_phone,mobile_phone)
-    records_phonebook[index] = record
-    phone_book = open('PhoneBook.txt', 'a')
-    print(surname, name, second_name, organization, job_phone, mobile_phone)
-    phone_book.close()
-
-
-# Список записей в справочнике
-records_phonebook = []
-# Количество записей на страницу
-page_size = 5
-
-
-# Основной цикл программы
-while True:
-    action = input("Введите команду из предложенных: add, show, edit, find:")
-    print()
-    file_name = 'PhoneBook.txt'
-    # Добавление новой записи в справочник
-    if action == "add":
-        add_records(file_name)
-    # Вывод записей из справочника на экран
-    elif action == "show":
-        page = int(input("Введите, номер страницы начиная с '0': "))
-        show_records(page, file_name)
-    # Редактирование записей в справочнике
-    elif action == "edit":
-        index = int(input("Введите индекс записи:"))
-        edit_records(index)
-    # Поиск записей в справочнике
-    elif action == "find":
-        #print("\nНайдено записей: {}".format(len(found_records)))
-        search_records(file_name)
+    # Поиск записи по указанной строке
+    data_file.seek(0) # перемещение в начало файла
+    for line in data_file:
+        if search_key in line:
+            search_results += line
+    if search_results:
+        print(search_results)
     else:
-        print("Неизвестная команда, повторите ввод!")
+        print("По запросу '{}' записей не найдено".format(search_key))
+
+
+# Функция редактирования записи в телефонном справочнике
+def edit_entry():
+    search_key = input("Введите ячейку строки: ")
+    search_results = ""
+    edit_data = []
+
+    data_file.seek(0) # перемещение в начало файла
+    for line in data_file:
+        if search_key in line:
+            search_results += line
+            edit_data = line.split(';') # разделение строки на составляющие
+    if search_results:
+        # Запрос на редактирование соответствующих характеристик
+        edit_data[0] = input("Введите фамилию [{}]: ".format(edit_data[0])) or edit_data[0]
+        edit_data[1] = input("Введите имя [{}]: ".format(edit_data[1])) or edit_data[1]
+        edit_data[2] = input("Введите отчество [{}]: ".format(edit_data[2])) or edit_data[2]
+        edit_data[3] = input("Введите название организации [{}]: ".format(edit_data[3])) or edit_data[3]
+        edit_data[4] = input("Введите телефон рабочий [{}]: ".format(edit_data[4])) or edit_data[4]
+        edit_data[5] = input("Введите телефон личный [{}]: ".format(edit_data[5])) or edit_data[5]
+    else:
+        print("По запросу '{}' записей не найдено".format(search_key))
+
+    # Запись отредактированных данных в файл
+    if edit_data:
+        with open('PhoneBook.txt', 'r') as f:
+            old_data = f.read()
+        new_data = old_data.replace(search_results, '{};{};{};{};{};{}\n'.format(edit_data[0], edit_data[1],
+                                                                                 edit_data[2], edit_data[3],
+                                                                                 edit_data[4], edit_data[5]))
+
+        with open('PhoneBook.txt', 'w') as f:
+            f.write(new_data)
+
+
+# Функция отображения телефонного справочника по страницам
+def show_entry():
+    count = 0
+    # Отображение данных из файла
+    data_file.seek(0)
+    for line in data_file:
+        count += 1
+        if count > 9:
+            count = 0
+            print(line, end="")
+            x = input("n - далее, q - выход: ")
+            if x == 'q':
+                break
+        else:
+            print(line, end="")
+
+
+if __name__ == "__main__":
+    # Открытие файла на чтение/запись
+    if os.path.exists('PhoneBook.txt'):
+        data_file = open('PhoneBook.txt', 'r')
+    else:
+        data_file = open('PhoneBook.txt', 'w')
+
+    while True:
+        # Вывод меню на экран
+        print('''
+Телефонный справочник:
+1. Вывод постранично записей из справочника на экран
+2. Добавление новой записи в справочник
+3. Возможность редактирования записей в справочнике
+4. Поиск записей по одной или нескольким характеристикам
+5. Выход
+        ''')
+        # Выбор пункта меню
+        x = int(input('Выберите пункт меню: '))
+        if x == 1:
+            show_entry()
+        elif x == 2:
+            add_entry()
+        elif x == 3:
+            edit_entry()
+        elif x == 4:
+            search_entry()
+        elif x == 5:
+            break
+        else:
+            print('Неверный пункт меню')
+
+# Закрытие файла
+data_file.close()
